@@ -1,0 +1,57 @@
+clear variables; close all; clc;
+%% Resolution de Px
+% f(y) = 0.5*mu*(y-D*x).^2 + lambda*|y|;
+
+%Image etoile
+I = im2double(rgb2gray(imread('etoile_z.png')));
+X = zeros(size(I));
+Y = randn(size(I));
+Z = D(x);
+x = X(:); y = Y(:); z = Z(:);
+
+%%Parametres
+u0 = max(max(z))*ones(size(z));
+lambda = 10;
+gamma = 1;
+mu = 1;
+
+%%Fonctions (si x vecteur)
+f = @(x) 0.5*mu*(x-z).^2;
+g = @(x) lambda * abs(x);
+f_cout = @(x) f(x) + g(D(x));
+F = @(u) 0.5*(-Dadj(u)+z).^2;
+
+%%Gradients de f et F=f*
+grad_f = @(x) x-Z;
+grad_F = @(u) -D(-Dadj(u(:))+z);
+
+%%Operateurs proximaux
+prox_n1 = @(x,g) (x>g).*(x-g) + (x>=-g & x<=g).*(0) + (x<-g).*(x+g);
+prox_n2 = @(x,g) x.^2/(2*g+1);
+
+%%Gradient proximal
+u = u0; u_precedent = 0.9*u0; 
+cpt=0; seuil = 1e-5;
+while norm(u-u_precedent)>seuil && cpt<100
+    u_precedent(:) = u(:);
+    u(:) = u(:) - gamma * prox_n1(1/gamma*u(:)-grad_F(u(:)),lambda/gamma);
+    cpt=cpt+1;
+end
+
+%%Calcul de x_hat
+x_chapeau = -Dadj(u(:))+z;
+x_chapeau = reshape(x_chapeau,size(Z));
+
+
+%Affichage
+figure(1)
+subplot(121)
+imshow(Z,[]);
+title('image observée')
+
+subplot(122)
+imshow(x_chapeau,[]);
+title(['\lambda = ',num2str(lambda),'; \gamma = ',num2str(gamma)])
+
+
+
