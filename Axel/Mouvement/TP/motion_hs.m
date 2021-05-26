@@ -3,7 +3,7 @@ function [u,v,H,W,I1,it] = motion_hs(image1,image2,lambda,mean_filter,threshold)
 %   image1 -> adresse de la premiere image
 %   image2 -> adresse de la seconde image
 %   lambda
-%   mean-filter -> filtre moyenneur => '4-voisinage' ou '9-voisinage'
+%   mean-filter -> choix du filtre moyenneur 
 %   threshold -> critere d'arret
 
 %Parametres de sortie : 
@@ -15,6 +15,7 @@ function [u,v,H,W,I1,it] = motion_hs(image1,image2,lambda,mean_filter,threshold)
 I1 = im2double(imread(image1));
 I2 = im2double(imread(image2));
 [H,W] = size(I1);
+
 %Calcul des gradients
 It = (I2 - I1);
 [Ix,Iy] = imgradientxy(I1);
@@ -33,7 +34,10 @@ switch mean_filter
                       0,1,0];
     case '9-voisinage'
         filtre = 1/9*ones(3,3);
-        filtre(2,2) = 0;
+        filtre(3,3) = 0;
+    case'25-voisinage'
+        filtre = 1/25 * ones(5,5);
+        filtre(5,5) = 0;
 end
 
 %Initialisation du critere d'arret

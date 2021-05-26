@@ -1,10 +1,12 @@
-function [u,v,H,L,I1] = motion_lk(image1,image2,n,mu,sigma)
+function [u,v,H,L,I1] = motion_lk(image1,image2,n,mu,sigma,img,nbr_images)
 
 %Parametres d'entree
 %    - image1 -> adresse de la premiere image
 %    - image2 -> adresse de la seconde image
 %    - n -> taille du voisinage considere
 %    - mu,sigma -> parametres de la gaussienne pour le poids des voisins
+%    - img -> numero de la première image courante
+%    - nbr_images -> nombre d'images a traiter 
     
 %Parametres de sortie
 %   - (u,v) -> le flux optique
@@ -31,10 +33,10 @@ u = zeros(H,L);
 v = zeros(H,L);
 
 k = n-fix(n/2)-1;%Variable pour le dimensionnement
-count = 0
+iter = 0;
 for i = 1+k:H-k
     for j = 1+k:L-k
-        count = count + 1;
+        iter = iter + 1;
 
         %Vectorisation des gradients (1*n^2)
         gt = reshape(It(i-k:i+k,j-k:j+k),[],1);
@@ -52,8 +54,11 @@ for i = 1+k:H-k
         uv = pinv(M)*A'*W2*b;
         u(i,j) = uv(1);
         v(i,j) = uv(2);
-        if rem(count,1500) == 0
-            count
+        if rem(iter,5000) == 0
+            it_disp = ['Iteration',int2str(iter),'/',int2str((H-2*k)*(L-2*k)+1),...
+            ' -> Image ',int2str(img),'/',int2str(nbr_images - 1)]
         end
     end
 end
+it_disp = ['Iteration',int2str((H-2*k)*(L-2*k)+1),'/',int2str((H-2*k)*(L-2*k)+1),...
+            ' -> Images ',int2str(img),'-',int2str(img+1)]
